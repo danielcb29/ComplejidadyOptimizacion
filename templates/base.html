@@ -1,0 +1,31 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+    <meta content="Proyecto final complejidad y optimización. Universida del Valle" name="description" />
+    <meta content="Aurelio, Daniel, Kellys, Jhon" name="author" />
+
+    <title>Problema de las cosechas</title>
+
+    <link href="{% static 'bootstrap-3.3.7-dist/css/bootstrap.min.css' %}" rel="stylesheet" />
+</head>
+<body>
+
+<div class="panel">
+	<div class="panel-title">
+		Problema de las cosechas - Complejidad y Optimización
+	</div>
+	<div class="panel-content">
+		{% block contenido %}
+
+		{% endblock contenido %}	
+	</div>
+</div>
+
+
+<!--Scripts JS-->
+
+</body>
+</html>
