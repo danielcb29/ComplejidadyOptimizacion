@@ -22,8 +22,8 @@ class ProcesamientoView(FormView):
         #  Uso de funcionalidades tipo helper para pre proceso y calculo de resultado
         self.variables = pre_procesamiento_variables(k, b)
         self.total_restricciones += pre_procesamiento_r1(self.variables)
-        self.total_restricciones += pre_procesamiento_r2(self.variables, b)
-        # print(self.total_restricciones) # En caso de querer verificar el conjunto de restricciones
+        self.total_restricciones += pre_procesamiento_r2(self.variables)
+        print(self.total_restricciones) # En caso de querer verificar el conjunto de restricciones
         return super(ProcesamientoView, self).form_valid(form)
 
     def get_success_url(self):
@@ -79,7 +79,7 @@ def pre_procesamiento_r1(variables):
     return resultado
 
 
-def pre_procesamiento_r2(variables, b):
+def pre_procesamiento_r2(variables):
     """
     Autor: Daniel Correa
 
@@ -99,5 +99,5 @@ def pre_procesamiento_r2(variables, b):
     resultado = variables[0]
     for fila in variables[1:]:
         resultado = [' + '.join(valores) for valores in zip(resultado, fila)]
-    resultado = [valor + ' <= 1' for valor in resultado]
+    resultado = ['%s <= 1' % valor for valor in resultado]
     return resultado
