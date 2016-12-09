@@ -1,12 +1,13 @@
-from simplex import Simplex
+from optimizacion.simplex import Simplex
 
 objective = ('maximize', '40x_1 + 30x_2 + 38x_3 + 45x_4')
 constraints = [
-	'1x_1 <= 4', 
-	'1x_2 <= 3', 
-	'1x_3 <= 3', 
-	'1x_4 <= 4', 
-	'1x_1 + 1x_2 + 1x_3 + 1x_4 = 8']
+    '1x_1 <= 4',
+    '1x_2 <= 3',
+    '1x_3 <= 3',
+    '1x_4 <= 4',
+    '1x_1 + 1x_2 + 1x_3 + 1x_4 = 8'
+]
 
 # objective = ('minimize', '4x_1 + 1x_2')
 # constraints = ['3x_1 + 1x_2 = 3', '4x_1 + 3x_2 >= 6', '1x_1 + 2x_2 <= 4']
