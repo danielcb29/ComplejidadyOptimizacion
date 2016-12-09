@@ -32,6 +32,10 @@ class ProcesamientoView(FormView):
 
 #  Toda funcionalidad helper para pre procesar y calcular el resultado
 
+def funcion_objetivo(variables, utilidades):
+    pass
+
+
 def pre_procesamiento_variables(k, b):
     """
     Autor: Daniel Correa
