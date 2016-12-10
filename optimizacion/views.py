@@ -1,4 +1,4 @@
-from django.core.urlresolvers import reverse
+from django.shortcuts import render
 from django.views.generic import FormView
 
 from optimizacion.forms import ProcesamientoForm
@@ -15,22 +15,36 @@ class ProcesamientoView(FormView):
     def get_context_data(self, **kwargs):
         context = super(ProcesamientoView, self).get_context_data(**kwargs)
         # Adicionar al contexto lo que se requiera en el template
-
+        context['has_resultados'] = False
         return context
 
     def form_valid(self, form):
         k, tis, b, matriz_utilidad = form.get_clean_archivo()
+
         #  Uso de funcionalidades tipo helper para pre proceso y calculo de resultado
         self.variables = pre_procesamiento_variables(k, b)
         self.total_restricciones += pre_procesamiento_r1(self.variables)
         self.total_restricciones += pre_procesamiento_r2(self.variables)
-        print(self.total_restricciones)  # En caso de querer verificar el conjunto de restricciones
+        #print(self.total_restricciones)  # En caso de querer verificar el conjunto de restricciones
         self.fun_obj = funcion_objetivo(self.variables, matriz_utilidad, k)
-        print(self.fun_obj)  # En vaso de querer verificar la funcion objetivo
-        return super(ProcesamientoView, self).form_valid(form)
+        #print(self.fun_obj)  # En caso de querer verificar la funcion objetivo
 
-    def get_success_url(self):
-        return reverse('optimizacion:inicio')
+        # Procesar datos calculados con solver
+        solver = Simplex(num_vars=k*b, constraints=self.total_restricciones, objective_function=self.fun_obj)
+        solucion = solver.solution
+        valor_optimo = solver.optimize_val
+
+        # Contexto para presentacion de resultados
+        context = {
+            'form': form,
+            'has_resultados': True,
+            'restricciones':self.total_restricciones,
+            'funcion_objetivo': self.fun_obj,
+            # Añadir al contexto valor retornados por el solver
+            'valor_optimo': valor_optimo,
+            'solucion': solucion
+        }
+        return render(self.request, self.template_name, context)
 
 
 #  Toda funcionalidad helper para pre procesar y calcular el resultado
