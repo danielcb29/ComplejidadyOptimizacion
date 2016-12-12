@@ -25,17 +25,13 @@ class ProcesamientoView(FormView):
         self.variables = pre_procesamiento_variables(k, b)
         self.total_restricciones += pre_procesamiento_r1(self.variables)
         self.total_restricciones += pre_procesamiento_r2(self.variables)
-<<<<<<< HEAD
+
         # print(self.total_restricciones) # En caso de querer verificar el conjunto de restricciones
         print(self.variables)
         print("HOLA 1")
         print(pre_procesamiento_r3(self.variables,tis))
         print("HOLA 2")
-        return super(ProcesamientoView, self).form_valid(form)
 
-    def get_success_url(self):
-        return reverse('optimizacion:inicio')
-=======
         #print(self.total_restricciones)  # En caso de querer verificar el conjunto de restricciones
         self.fun_obj = funcion_objetivo(self.variables, matriz_utilidad, k)
         #print(self.fun_obj)  # En caso de querer verificar la funcion objetivo
@@ -56,7 +52,6 @@ class ProcesamientoView(FormView):
             'solucion': solucion
         }
         return render(self.request, self.template_name, context)
->>>>>>> de1ab542f53c555d83ce74c5557e2fa2ad741238
 
 
 #  Toda funcionalidad helper para pre procesar y calcular el resultado
