@@ -10,4 +10,26 @@
     </form>
     <hr/>
     <h1>Resultados</h1>
+    {% if has_resultados %}
+        <p>
+            <b>Restricciones: </b>
+            {{ restricciones }}
+        </p>
+        <p>
+            <b>Función Objetivo:</b>
+            {{ funcion_objetivo }}
+        </p>
+        <p>
+            <b>Solución:</b>
+            {{ solucion }}
+        </p>
+        <p>
+            <b>Valor Óptimo:</b>
+            {{ valor_optimo }}
+        </p>
+    {% else %}
+        <p>
+            Aun no se procesa una entrada
+        </p>
+    {% endif %}
 {% endblock %}

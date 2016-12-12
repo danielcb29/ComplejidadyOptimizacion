@@ -1,4 +1,4 @@
-from django.core.urlresolvers import reverse
+from django.shortcuts import render
 from django.views.generic import FormView
 
 from optimizacion.forms import ProcesamientoForm
@@ -10,19 +10,22 @@ class ProcesamientoView(FormView):
     form_class = ProcesamientoForm
     variables = None
     total_restricciones = []
+    fun_obj = None
 
     def get_context_data(self, **kwargs):
         context = super(ProcesamientoView, self).get_context_data(**kwargs)
         # Adicionar al contexto lo que se requiera en el template
-
+        context['has_resultados'] = False
         return context
 
     def form_valid(self, form):
         k, tis, b, matriz_utilidad = form.get_clean_archivo()
+
         #  Uso de funcionalidades tipo helper para pre proceso y calculo de resultado
         self.variables = pre_procesamiento_variables(k, b)
         self.total_restricciones += pre_procesamiento_r1(self.variables)
         self.total_restricciones += pre_procesamiento_r2(self.variables)
+<<<<<<< HEAD
         # print(self.total_restricciones) # En caso de querer verificar el conjunto de restricciones
         print(self.variables)
         print("HOLA 1")
@@ -32,9 +35,62 @@ class ProcesamientoView(FormView):
 
     def get_success_url(self):
         return reverse('optimizacion:inicio')
+=======
+        #print(self.total_restricciones)  # En caso de querer verificar el conjunto de restricciones
+        self.fun_obj = funcion_objetivo(self.variables, matriz_utilidad, k)
+        #print(self.fun_obj)  # En caso de querer verificar la funcion objetivo
+
+        # Procesar datos calculados con solver
+        solver = Simplex(num_vars=k*b, constraints=self.total_restricciones, objective_function=self.fun_obj)
+        solucion = solver.solution
+        valor_optimo = solver.optimize_val
+
+        # Contexto para presentacion de resultados
+        context = {
+            'form': form,
+            'has_resultados': True,
+            'restricciones':self.total_restricciones,
+            'funcion_objetivo': self.fun_obj,
+            # Añadir al contexto valor retornados por el solver
+            'valor_optimo': valor_optimo,
+            'solucion': solucion
+        }
+        return render(self.request, self.template_name, context)
+>>>>>>> de1ab542f53c555d83ce74c5557e2fa2ad741238
 
 
 #  Toda funcionalidad helper para pre procesar y calcular el resultado
+
+def funcion_objetivo(variables, utilidades, k):
+    """
+    Autor: Daniel Correa
+
+    Permite obtener una tupla que representa la funcion objetivo
+
+    FO: Max sum i=0 hasta k sum j=0 hasta b de Xij * Uij
+
+    Explicacion:
+    En un rango de 0 hasta k, se saca cafa fila de la matriz de variables y la matriz de utilidad.
+    Se asignan los coeficientes de utilidad a las variables de la funcion objetivo (Xij * Uij)
+    Se guardan esos coeficientes en un arreglo
+    Se retorna una tupla con la expresion maximize y todos los valores del arreglo en una expresion +
+    Ej: Para unas variables [['1x_1','1x_2','1x_3],['1x_4','1x_5','1x_6]]
+    unas utilidades [[1,2,3],[4,5,6]] y un k=2 se obtiene como resultado
+    ('maximize', '1x_1+2x_2+3x_3+4x_4+5x_5+6x_6')
+
+    :param variables: matriz variables de desicion
+    :param utilidades: matriz con coeficientes de utilidad
+    :param k: cantidad de parcelas
+    :return: Tupla que representa funcion objetivo
+    """
+    resultado = []
+    for i in range(k):
+        var = variables[i]
+        utl = utilidades[i]
+        coeficientes = [union[0].replace('1x', '%ix' % union[1]) for union in zip(var, utl)]
+        resultado += coeficientes
+    return 'maximize', ' + '.join(resultado)
+
 
 def pre_procesamiento_variables(k, b):
     """
