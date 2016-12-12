@@ -23,7 +23,11 @@ class ProcesamientoView(FormView):
         self.variables = pre_procesamiento_variables(k, b)
         self.total_restricciones += pre_procesamiento_r1(self.variables)
         self.total_restricciones += pre_procesamiento_r2(self.variables)
-        print(self.total_restricciones) # En caso de querer verificar el conjunto de restricciones
+        # print(self.total_restricciones) # En caso de querer verificar el conjunto de restricciones
+        print(self.variables)
+        print("HOLA 1")
+        print(pre_procesamiento_r3(self.variables,tis))
+        print("HOLA 2")
         return super(ProcesamientoView, self).form_valid(form)
 
     def get_success_url(self):
@@ -87,7 +91,6 @@ def pre_procesamiento_r2(variables):
 
     R2: Sum i=1 hasta k xi,1 <= 1 desde 1 hasta b
 
-    Explicacion:
     Se inicializa el resultado con la primera fila.
     Para cada fila restante pega el valor de resultado y fila en la misma posicion con un + en el medio.
     Agrega el valor <= 1 para cada elemento de resultado
@@ -101,3 +104,25 @@ def pre_procesamiento_r2(variables):
         resultado = [' + '.join(valores) for valores in zip(resultado, fila)]
     resultado = ['%s <= 1' % valor for valor in resultado]
     return resultado
+
+
+def pre_procesamiento_r3(variables,tis):
+    def sub_matriz(fil,col,matriz, tis):
+        matriz = matriz[:]
+        ti = tis[fil]
+        # Eliminar fila
+        del matriz[fil]
+
+        # Eliminar columna
+        for fila in matriz:
+            del fila[col]
+        #print("matriz",matriz)
+        subm = []
+        for parcela in matriz:
+            print("parcela - tis: {} - {}".format(parcela, ti))
+            subm += parcela[col:col + ti - 1]
+            print("parcela: ", subm)
+
+        return(subm)
+
+    return sub_matriz(0,0,variables,tis)
