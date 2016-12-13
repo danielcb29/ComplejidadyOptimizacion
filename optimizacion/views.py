@@ -11,7 +11,9 @@ class ProcesamientoView(FormView):
     template_name = "optimizacion/optimizacion_process.html"
     form_class = ProcesamientoForm
     variables = None
-    total_restricciones = []
+
+    total_restricciones_r1 = []
+    total_restricciones_r2 = []
     fun_obj = None
 
     def get_context_data(self, **kwargs):
@@ -25,9 +27,10 @@ class ProcesamientoView(FormView):
 
         #  Uso de funcionalidades tipo helper para pre proceso y calculo de resultado
         self.variables = pre_procesamiento_variables(k, b)
-        self.total_restricciones += pre_procesamiento_r1(self.variables)
-        self.total_restricciones += pre_procesamiento_r2(self.variables)
-        self.total_restricciones += pre_procesamiento_r3(self.variables, tis, k*b)
+        self.total_restricciones_r1 = pre_procesamiento_r1(self.variables)
+        self.total_restricciones_r2 = pre_procesamiento_r2(self.variables)
+
+        #self.total_restricciones += pre_procesamiento_r3(self.variables, tis, k*b)
         # print(self.total_restricciones) # En caso de querer verificar el conjunto de restricciones
 
         print("R3")
@@ -38,19 +41,24 @@ class ProcesamientoView(FormView):
         # print(self.fun_obj)  # En caso de querer verificar la funcion objetivo
 
         # Procesar datos calculados con solver
-        solver = Simplex(num_vars=k*b, constraints=self.total_restricciones, objective_function=self.fun_obj)
+
         try:
+            total_restricciones = self.total_restricciones_r1 + self.total_restricciones_r2
+            solver = Simplex(num_vars=k*b, constraints=total_restricciones, objective_function=self.fun_obj)
             solucion = solver.solution
             valor_optimo = solver.optimize_val
             msn = 'Valor factible encontrado'
         except ValueError:
             msn = 'No hay solucion factible'
+            valor_optimo = None
+            solucion = None
 
         # Contexto para presentacion de resultados
         context = {
             'form': form,
             'has_resultados': True,
-            'restricciones':self.total_restricciones,
+            'restricciones_1':self.total_restricciones_r1,
+            'restricciones_2':self.total_restricciones_r2,
             'funcion_objetivo': self.fun_obj,
             # Añadir al contexto valor retornados por el solver
             'valor_optimo': valor_optimo,
