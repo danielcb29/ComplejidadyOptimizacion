@@ -166,12 +166,41 @@ def pre_procesamiento_r2(variables):
 
 
 def sub_matriz(i, j, matriz, tis):
-        submatriz = matriz[:i] + matriz[i+1:]
-        submatriz = [fila[j+1: j + tis[i]] for fila in submatriz]
-        return submatriz
+    """
+    Autor: Daniel Correa, Aurelio Vivas, Kellys , John
+
+    Funcion auxiliar para calculo de submatriz de una variable de decision
+
+    :param i: Posicion de la fila donde se encuentra la variable
+    :param j: Posicion de la columna donde se encuentra la variable
+    :param matriz: Matriz de variables de decision
+    :param tis: Tiempos de cosechas de cada parcela
+    :return: Sub matriz de una variable de decision
+    """
+    submatriz = matriz[:i] + matriz[i+1:]
+    submatriz = [fila[j+1: j + tis[i]] for fila in submatriz]
+    return submatriz
 
 
 def pre_procesamiento_r3(variables, tis, m):
+    """
+    Autor: Daniel Correa, Aurelio Vivas,
+
+    Permite obtener las restricciones en formato de solver para el tercer conjunto de restricciones del modelo
+
+    R3:
+    Para cada Xij:
+
+    Sum n=1 hasta K sum m = B hasta B + Ti -1 de Xnm - Sum m=1 hasta B de Xim <= (1-Xij)*M
+    Explicacion:
+    Para cada variable de decision se calcula su submatriz y se retorna la expresion para la suma de los valores de
+    esta submatriz <= (1 - variable)*M
+
+    :param variables: matriz con variables de descion
+    :param tis: tiempos de cosecha de cada parcela
+    :param m: valor cota superior para invalidar o validar restriccion
+    :return: Arreglo con restricciones en formato solver
+    """
     resultado = []
     for i, fila in enumerate(variables):
         for j, variable in enumerate(fila):
