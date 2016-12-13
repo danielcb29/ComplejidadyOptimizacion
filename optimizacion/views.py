@@ -11,11 +11,12 @@ from math import floor
 class ProcesamientoView(FormView):
     template_name = "optimizacion/optimizacion_process.html"
     form_class = ProcesamientoForm
+    fun_obj = None
     variables = None
-
     total_restricciones_r1 = []
     total_restricciones_r2 = []
-    fun_obj = None
+    total_restricciones_r3 = []
+
 
     def get_context_data(self, **kwargs):
         context = super(ProcesamientoView, self).get_context_data(**kwargs)
@@ -30,33 +31,26 @@ class ProcesamientoView(FormView):
         self.variables = pre_procesamiento_variables(k, b)
         self.total_restricciones_r1 = pre_procesamiento_r1(self.variables)
         self.total_restricciones_r2 = pre_procesamiento_r2(self.variables)
-
-        #self.total_restricciones += pre_procesamiento_r3(self.variables, tis, k*b)
-        # print(self.total_restricciones) # En caso de querer verificar el conjunto de restricciones
-
-        print("R3")
-        #print(pre_procesamiento_r3(self.variables, tis, k*b))
-
-        # print(self.total_restricciones)  # En caso de querer verificar el conjunto de restricciones
+        self.total_restricciones_r3 = pre_procesamiento_r3(self.variables, tis, k*b)
         self.fun_obj = funcion_objetivo(self.variables, matriz_utilidad, k)
-        # print(self.fun_obj)  # En caso de querer verificar la funcion objetivo
 
         # Procesar datos calculados con solver
 
-    # try:
-        total_restricciones = self.total_restricciones_r1 + self.total_restricciones_r2
-        solver = Simplex(num_vars=k*b, constraints=total_restricciones, objective_function=self.fun_obj)
-        solucion = solver.solution
-        planificacion = planificacion_parcelas(solucion,self.variables,k,b)
-        instantes = range(1,b+1)
-        valor_optimo = solver.optimize_val
-        msn = 'Valor factible encontrado'
-    # except ValueError:
-        # msn = 'No hay solucion factible'
-        # valor_optimo = None
-        # solucion = None
-        # planificacion = None
-        # instantes = None
+        try:
+            # total_restricciones = self.total_restricciones_r1 + self.total_restricciones_r2 + self.total_restricciones_r2
+            total_restricciones = self.total_restricciones_r1 + self.total_restricciones_r2
+            solver = Simplex(num_vars=k*b, constraints=total_restricciones, objective_function=self.fun_obj)
+            solucion = solver.solution
+            planificacion = planificacion_parcelas(solucion,self.variables,k,b)
+            instantes = range(1,b+1)
+            valor_optimo = solver.optimize_val
+            msn = 'Valor factible encontrado'
+        except ValueError:
+            msn = 'No hay solucion factible'
+            valor_optimo = None
+            solucion = None
+            planificacion = None
+            instantes = None
 
         # Contexto para presentacion de resultados
         context = {
@@ -64,10 +58,10 @@ class ProcesamientoView(FormView):
             'has_resultados': True,
             'restricciones_1':self.total_restricciones_r1,
             'restricciones_2':self.total_restricciones_r2,
+            'restricciones_3':self.total_restricciones_r3,
             'funcion_objetivo': self.fun_obj,
             'planificacion':planificacion,
             'instantes': instantes,
-            # Añadir al contexto valor retornados por el solver
             'valor_optimo': valor_optimo,
             'solucion': solucion,
             'msn': msn

@@ -10,12 +10,13 @@
         <p class="lead blog-description">Determina en que momento es mejor cosechar cada parcela.</p>
       </div>
       <div class="row">
-        <div class="col-sm-8 blog-main">
+        <div class="col-sm-12 blog-main">
           <div class="blog-post">
             <form class="form-inline" action="" method="post" enctype="multipart/form-data">{% csrf_token %}
-            <h2 class="blog-post-title">Subir archivo</h2>
+                <div class="well">
                 {% bootstrap_form form %}
-                <button class="btn btn-primary"> Enviar</button>
+                <button class="btn btn-primary pull-right"> Enviar</button>
+                </div>
             </form>
           </div><!-- /.blog-post -->
           <hr>
@@ -24,41 +25,23 @@
             <h2 class="blog-post-title">Función objetivo</h2>
             {% if solucion %}
             <div class="alert alert-success" role="alert">
-              <strong>Solucion encontrada!</strong> {{ solucion }}.
+              <strong>Solucion encontrada!</strong><br>
+              <strong>Valor Óptimo: </strong>{{ valor_optimo }}<br>
+              <strong>Variables: </strong>{{ solucion }}<br>
+              <strong>Función: </strong>{{ funcion_objetivo }}<br>
             </div>
             {% else %}
             <div class="alert alert-warning" role="alert">
               <strong>No hay solución factible!</strong>.
             </div>
             {% endif %}
-            <blockquote>
-              <p><strong>{{ funcion_objetivo }}</strong></p>
-            </blockquote>
-          </div><!-- /.blog-post -->
-          <hr>
-          <div class="blog-post">
-            <h2 class="blog-post-title">Restricciones de Solapamiento</h2>
-            <div class="row marketing">
-            <div class="col-lg-6">
-                <h4>Subheading</h4>
-                {% for restriccion in restricciones_1 %}
-                <p>{{ restriccion }}</p>
-                {% endfor %}
-              </div>
-              <div class="col-lg-6">
-                <h4>Subheading</h4>
-                {% for restriccion in restricciones_2 %}
-                <p>{{ restriccion }}</p>
-                {% endfor %}
-              </div>
-            </div>
           </div><!-- /.blog-post -->
           <hr>
           <div class="blog-post">
             <h2 class="blog-post-title">Planificación</h2>
             <div class="panel panel-default">
               <div class="panel-heading">
-                <h3 class="panel-title">Panel title</h3>
+                <h3 class="panel-title">Orden de Coseña</h3>
               </div>
               <div class="panel-body">
                 <table class="table table-bordered">
@@ -84,85 +67,43 @@
               </div>
             </div>
           </div><!-- /.blog-post -->
+          <hr>
+          <div class="blog-post">
+            <h2 class="blog-post-title">Restricciones de Solapamiento</h2>
+            <div class="row marketing">
+            <div class="col-lg-6">
+                <h4>Cada parcela inicia en un único instante</h4>
+                {% for restriccion in restricciones_1 %}
+                <p>{{ restriccion }}</p>
+                {% endfor %}
+              </div>
+              <div class="col-lg-6">
+                <h4>En un instante dado solo se puede cosechar una parcela</h4>
+                {% for restriccion in restricciones_2 %}
+                <p>{{ restriccion }}</p>
+                {% endfor %}
+              </div>
+            </div>
+          </div><!-- /.blog-post -->
+          <hr>
+          <div class="blog-post">
+            <h2 class="blog-post-title">Restricciones de Finalización</h2>
+            <div class="row marketing">
+              <div class="col-lg-6">
+                {% for restriccion in restricciones_3 %}
+                <p>{{ restriccion }}</p>
+                {% endfor %}
+              </div>
+            </div>
+          </div><!-- /.blog-post -->
         {% endif %}
         </div><!-- /.blog-main -->
-
-        <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
-          <div class="sidebar-module sidebar-module-inset">
-            <h4>About</h4>
-            <p>Etiam porta <em>sem malesuada magna</em> mollis euismod. Cras mattis consectetur purus sit amet fermentum. Aenean lacinia bibendum nulla sed consectetur.</p>
-          </div>
-          <div class="sidebar-module">
-            <h4>Archives</h4>
-            <ol class="list-unstyled">
-              <li><a href="#1" data-toggle="tab">March 2014</a></li>
-              <li><a href="#2" data-toggle="tab">February 2014</a></li>
-              <li><a href="#3">January 2014</a></li>
-              <li><a href="#4">December 2013</a></li>
-              <li><a href="#">November 2013</a></li>
-              <li><a href="#">October 2013</a></li>
-              <li><a href="#">September 2013</a></li>
-              <li><a href="#">August 2013</a></li>
-              <li><a href="#">July 2013</a></li>
-              <li><a href="#">June 2013</a></li>
-              <li><a href="#">May 2013</a></li>
-              <li><a href="#">April 2013</a></li>
-            </ol>
-          </div>
-          <div class="sidebar-module">
-            <h4>Elsewhere</h4>
-            <ol class="list-unstyled">
-              <li><a href="#">GitHub</a></li>
-              <li><a href="#">Twitter</a></li>
-              <li><a href="#">Facebook</a></li>
-            </ol>
-          </div>
-        </div><!-- /.blog-sidebar -->
-
       </div><!-- /.row -->
-
     </div><!-- /.container -->
 
     <footer class="blog-footer">
       <p>Proyecto de Complejidad y Optimización, Universidad del Valle, Cali, Colombia</p>
       <p>Aurelio Vivas, Daniel Correa, kellys Santa, Jhon Lourido</p>
     </footer>
-
-
-{% comment %}
-    <h1>Subir archivo</h1>
-    <form action="" method="post" enctype="multipart/form-data">{% csrf_token %}
-        {% bootstrap_form form %}
-        <button class="btn btn-primary"> Enviar</button>
-    </form>
-    <hr/>
-    <h1>Resultados</h1>
-    {% if has_resultados %}
-        <p>
-            <b>Restricciones: </b>
-            {{ restricciones }}
-        </p>
-        <p>
-            <b>Función Objetivo:</b>
-            {{ funcion_objetivo }}
-        </p>
-        <p>
-            <b>Solución:</b>
-            {{ solucion }}
-        </p>
-        <p>
-            <b>Valor Óptimo:</b>
-            {{ valor_optimo }}
-        </p>
-        <p>
-            <b>Mensaje:</b>
-            {{ msn }}
-        </p>
-    {% else %}
-        <p>
-            Aun no se procesa una entrada
-        </p>
-    {% endif %}
-
-{% endcomment %}
+</div>
 {% endblock %}
