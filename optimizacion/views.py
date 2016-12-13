@@ -5,6 +5,7 @@ from django.views.generic import FormView
 
 from optimizacion.forms import ProcesamientoForm
 from optimizacion.simplex import Simplex
+from math import floor
 
 
 class ProcesamientoView(FormView):
@@ -34,7 +35,7 @@ class ProcesamientoView(FormView):
         # print(self.total_restricciones) # En caso de querer verificar el conjunto de restricciones
 
         print("R3")
-        print(pre_procesamiento_r3(self.variables, tis, k*b))
+        #print(pre_procesamiento_r3(self.variables, tis, k*b))
 
         # print(self.total_restricciones)  # En caso de querer verificar el conjunto de restricciones
         self.fun_obj = funcion_objetivo(self.variables, matriz_utilidad, k)
@@ -42,16 +43,20 @@ class ProcesamientoView(FormView):
 
         # Procesar datos calculados con solver
 
-        try:
-            total_restricciones = self.total_restricciones_r1 + self.total_restricciones_r2
-            solver = Simplex(num_vars=k*b, constraints=total_restricciones, objective_function=self.fun_obj)
-            solucion = solver.solution
-            valor_optimo = solver.optimize_val
-            msn = 'Valor factible encontrado'
-        except ValueError:
-            msn = 'No hay solucion factible'
-            valor_optimo = None
-            solucion = None
+    # try:
+        total_restricciones = self.total_restricciones_r1 + self.total_restricciones_r2
+        solver = Simplex(num_vars=k*b, constraints=total_restricciones, objective_function=self.fun_obj)
+        solucion = solver.solution
+        planificacion = planificacion_parcelas(solucion,self.variables,k,b)
+        instantes = range(1,b+1)
+        valor_optimo = solver.optimize_val
+        msn = 'Valor factible encontrado'
+    # except ValueError:
+        # msn = 'No hay solucion factible'
+        # valor_optimo = None
+        # solucion = None
+        # planificacion = None
+        # instantes = None
 
         # Contexto para presentacion de resultados
         context = {
@@ -60,6 +65,8 @@ class ProcesamientoView(FormView):
             'restricciones_1':self.total_restricciones_r1,
             'restricciones_2':self.total_restricciones_r2,
             'funcion_objetivo': self.fun_obj,
+            'planificacion':planificacion,
+            'instantes': instantes,
             # Añadir al contexto valor retornados por el solver
             'valor_optimo': valor_optimo,
             'solucion': solucion,
@@ -175,7 +182,7 @@ def pre_procesamiento_r2(variables):
 
 def sub_matriz(i, j, matriz, tis):
     """
-    Autor: Daniel Correa, Aurelio Vivas, Kellys , John
+    Autor: Daniel Correa, Aurelio Vivas, Kellys Santa, John Lourido
 
     Funcion auxiliar para calculo de submatriz de una variable de decision
 
@@ -192,7 +199,7 @@ def sub_matriz(i, j, matriz, tis):
 
 def pre_procesamiento_r3(variables, tis, m):
     """
-    Autor: Daniel Correa, Aurelio Vivas,
+    Autor: Daniel Correa, Aurelio Vivas, Kellys Santa, John Lourido
 
     Permite obtener las restricciones en formato de solver para el tercer conjunto de restricciones del modelo
 
@@ -218,3 +225,26 @@ def pre_procesamiento_r3(variables, tis, m):
                 expresion = [' + '.join(elemento) for elemento in submatriz]
                 resultado.append(' + '.join(expresion) + ' <= (1 - %s)*%i' % (variable, m))
     return resultado
+
+def planificacion_parcelas(solucion,variables,k,b):
+    xs = []
+    print("Solución",solucion)
+    for llave in solucion.keys():
+        valor = solucion[llave]
+        print("Llave y valor",llave,int(valor))
+        if int(valor) == 1:
+            xs.append(llave)
+
+    posiciones = []
+
+    for x_i in xs:
+        i = int(x_i[2]) - 1
+        fila = int(i / b)
+        columna = i % b
+        posiciones.append((fila,columna))
+    print("Posiciones", posiciones)
+    matriz = [[0 for i in range(b)] for j in range(k)]
+    for i,j in posiciones:
+        matriz[i][j] = 1
+
+    return matriz

@@ -61,7 +61,26 @@
                 <h3 class="panel-title">Panel title</h3>
               </div>
               <div class="panel-body">
-                Panel content
+                <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th>#Parcela\Instante</th>
+                      {% for instante in instantes %}
+                      <th>{{ instante }}</th>
+                      {% endfor %}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for fila in planificacion %}
+                    <tr>
+                      <td>{{ forloop.counter }}</td>
+                      {% for valor in fila %}
+                      <td>{{ valor }}</td>
+                      {% endfor %}
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div><!-- /.blog-post -->
