@@ -27,21 +27,24 @@ class ProcesamientoView(FormView):
         self.variables = pre_procesamiento_variables(k, b)
         self.total_restricciones += pre_procesamiento_r1(self.variables)
         self.total_restricciones += pre_procesamiento_r2(self.variables)
-
+        self.total_restricciones += pre_procesamiento_r3(self.variables, tis, k*b)
         # print(self.total_restricciones) # En caso de querer verificar el conjunto de restricciones
-        print(self.variables)
-        print("HOLA 1")
-        print(pre_procesamiento_r3(self.variables,tis))
-        print("HOLA 2")
 
-        #print(self.total_restricciones)  # En caso de querer verificar el conjunto de restricciones
+        print("R3")
+        print(pre_procesamiento_r3(self.variables, tis, k*b))
+
+        # print(self.total_restricciones)  # En caso de querer verificar el conjunto de restricciones
         self.fun_obj = funcion_objetivo(self.variables, matriz_utilidad, k)
-        #print(self.fun_obj)  # En caso de querer verificar la funcion objetivo
+        # print(self.fun_obj)  # En caso de querer verificar la funcion objetivo
 
         # Procesar datos calculados con solver
         solver = Simplex(num_vars=k*b, constraints=self.total_restricciones, objective_function=self.fun_obj)
-        solucion = solver.solution
-        valor_optimo = solver.optimize_val
+        try:
+            solucion = solver.solution
+            valor_optimo = solver.optimize_val
+            msn = 'Valor factible encontrado'
+        except ValueError:
+            msn = 'No hay solucion factible'
 
         # Contexto para presentacion de resultados
         context = {
@@ -51,7 +54,8 @@ class ProcesamientoView(FormView):
             'funcion_objetivo': self.fun_obj,
             # Añadir al contexto valor retornados por el solver
             'valor_optimo': valor_optimo,
-            'solucion': solucion
+            'solucion': solucion,
+            'msn': msn
         }
         return render(self.request, self.template_name, context)
 
@@ -158,24 +162,22 @@ def pre_procesamiento_r2(variables):
     resultado = ['%s <= 1' % valor for valor in resultado]
     return resultado
 
+# Helper para R3
 
-def pre_procesamiento_r3(variables,tis):
-    def sub_matriz(fil,col,matriz, tis):
-        matriz = matriz[:]
-        ti = tis[fil]
-        # Eliminar fila
-        del matriz[fil]
 
-        # Eliminar columna
-        for fila in matriz:
-            del fila[col]
-        #print("matriz",matriz)
-        subm = []
-        for parcela in matriz:
-            print("parcela - tis: {} - {}".format(parcela, ti))
-            subm += parcela[col:col + ti - 1]
-            print("parcela: ", subm)
+def sub_matriz(i, j, matriz, tis):
+        submatriz = matriz[:i] + matriz[i+1:]
+        submatriz = [fila[j+1: j + tis[i]] for fila in submatriz]
+        return submatriz
 
-        return(subm)
 
-    return sub_matriz(0,0,variables,tis)
+def pre_procesamiento_r3(variables, tis, m):
+    resultado = []
+    for i, fila in enumerate(variables):
+        for j, variable in enumerate(fila):
+            submatriz = sub_matriz(i, j, variables, tis)
+            # Construir restriccion para variable
+            if [[]] != submatriz:
+                expresion = [' + '.join(elemento) for elemento in submatriz]
+                resultado.append(' + '.join(expresion) + ' <= (1 - %s)*%i' % (variable, m))
+    return resultado
