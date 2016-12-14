@@ -37,8 +37,8 @@ class ProcesamientoView(FormView):
         # Procesar datos calculados con solver
 
         try:
-            # total_restricciones = self.total_restricciones_r1 + self.total_restricciones_r2 + self.total_restricciones_r2
-            total_restricciones = self.total_restricciones_r1 + self.total_restricciones_r2
+            total_restricciones = self.total_restricciones_r1 + self.total_restricciones_r2 + self.total_restricciones_r3
+            # total_restricciones = self.total_restricciones_r1 + self.total_restricciones_r2
             solver = Simplex(num_vars=k*b, constraints=total_restricciones, objective_function=self.fun_obj)
             solucion = solver.solution
             planificacion = planificacion_parcelas(solucion,self.variables,k,b)
@@ -61,8 +61,8 @@ class ProcesamientoView(FormView):
             'restricciones_3':self.total_restricciones_r3,
             'funcion_objetivo': self.fun_obj,
             'planificacion':planificacion,
-            'instantes': instantes,
             'valor_optimo': valor_optimo,
+            'instantes': instantes,
             'solucion': solucion,
             'msn': msn
         }
@@ -80,7 +80,7 @@ def funcion_objetivo(variables, utilidades, k):
     FO: Max sum i=0 hasta k sum j=0 hasta b de Xij * Uij
 
     Explicacion:
-    En un rango de 0 hasta k, se saca cafa fila de la matriz de variables y la matriz de utilidad.
+    En un rango de 0 hasta k, se saca cada fila de la matriz de variables y la matriz de utilidad.
     Se asignan los coeficientes de utilidad a las variables de la funcion objetivo (Xij * Uij)
     Se guardan esos coeficientes en un arreglo
     Se retorna una tupla con la expresion maximize y todos los valores del arreglo en una expresion +
@@ -151,7 +151,7 @@ def pre_procesamiento_r1(variables):
 
 def pre_procesamiento_r2(variables):
     """
-    Autor: Daniel Correa
+    Autor: Daniel Correa, Aurelio Vivas
 
     Permite obtener las restricciones en formato de solver para el primer conjunto de restricciones del modelo
 
@@ -165,9 +165,10 @@ def pre_procesamiento_r2(variables):
     :param variables: matriz con variables de descion
     :return: Arreglo con restricciones en formato solver
     """
-    resultado = variables[0]
-    for fila in variables[1:]:
-        resultado = [' + '.join(valores) for valores in zip(resultado, fila)]
+    # Naturalmente las funciones de python reciben los argumentos como una tupla,
+    # * indica que la tupla que se esta pasando es una lista de argumentos a la
+    # función zip
+    resultado = [' + '.join(valores) for valores in zip(*tuple(variables))]
     resultado = ['%s <= 1' % valor for valor in resultado]
     return resultado
 
@@ -217,26 +218,39 @@ def pre_procesamiento_r3(variables, tis, m):
             # Construir restriccion para variable
             if [[]] != submatriz:
                 expresion = [' + '.join(elemento) for elemento in submatriz]
-                resultado.append(' + '.join(expresion) + ' <= (1 - %s)*%i' % (variable, m))
+                resultado.append(' + '.join(expresion) + ' + %i%s <= %i' % (m,variable[1:],m))
     return resultado
 
 def planificacion_parcelas(solucion,variables,k,b):
+    """
+    Autor: Aurelio Vivas
+
+    Permite obtener la planificación de cosecha de las parcelas en una matriz
+    donde las filas reprsentan cada parcela desde i hasta la k esima, las 
+    columnas los instantes desde i hasta b esimo.
+
+    :param variables: matriz con variables de decision
+    :param solución: diccionario de la forma {variable:valor} donde esta el valor de cada variable de decisión
+    :param k: número de parcelas
+    :param b: número de instantes de cosecha.
+    :return: matriz de unos y ceros, uno si la parcela en la fila i va a ser cosechada en el instante j.
+    """
     xs = []
-    print("Solución",solucion)
+    
+    # Guardando solo aquellas variables cuyo valor es igual a 1 en xs
     for llave in solucion.keys():
         valor = solucion[llave]
-        print("Llave y valor",llave,int(valor))
         if int(valor) == 1:
             xs.append(llave)
 
+    # Generando la matriz de planificación de cosechas
     posiciones = []
-
     for x_i in xs:
-        i = int(x_i[2]) - 1
+        i = int(x_i.replace('x_','')) - 1
         fila = int(i / b)
         columna = i % b
         posiciones.append((fila,columna))
-    print("Posiciones", posiciones)
+    
     matriz = [[0 for i in range(b)] for j in range(k)]
     for i,j in posiciones:
         matriz[i][j] = 1
