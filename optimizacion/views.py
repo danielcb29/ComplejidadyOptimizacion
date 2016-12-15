@@ -16,7 +16,8 @@ class ProcesamientoView(FormView):
     total_restricciones_r1 = []
     total_restricciones_r2 = []
     total_restricciones_r3 = []
-
+    total_restricciones_r4 = []
+    total_restricciones_r5 = []
 
     def get_context_data(self, **kwargs):
         context = super(ProcesamientoView, self).get_context_data(**kwargs)
@@ -32,17 +33,19 @@ class ProcesamientoView(FormView):
         self.total_restricciones_r1 = pre_procesamiento_r1(self.variables)
         self.total_restricciones_r2 = pre_procesamiento_r2(self.variables)
         self.total_restricciones_r3 = pre_procesamiento_r3(self.variables, tis, k*b)
+        self.total_restricciones_r4 = pre_procesamiento_r4(self.variables, k)
+        self.total_restricciones_r5 = pre_procesamiento_r5(self.variables, tis)
+
         self.fun_obj = funcion_objetivo(self.variables, matriz_utilidad, k)
 
         # Procesar datos calculados con solver
 
         try:
-            total_restricciones = self.total_restricciones_r1 + self.total_restricciones_r2 + self.total_restricciones_r3
-            # total_restricciones = self.total_restricciones_r1 + self.total_restricciones_r2
+            total_restricciones = self.total_restricciones_r1 + self.total_restricciones_r2 + self.total_restricciones_r3 + self.total_restricciones_r5 #+ self.total_restricciones_r4
             solver = Simplex(num_vars=k*b, constraints=total_restricciones, objective_function=self.fun_obj)
             solucion = solver.solution
-            planificacion = planificacion_parcelas(solucion,self.variables,k,b)
-            instantes = range(1,b+1)
+            planificacion = planificacion_parcelas(solucion, self.variables, k, b)
+            instantes = range(1, b+1)
             valor_optimo = solver.optimize_val
             msn = 'Valor factible encontrado'
         except ValueError:
@@ -56,11 +59,13 @@ class ProcesamientoView(FormView):
         context = {
             'form': form,
             'has_resultados': True,
-            'restricciones_1':self.total_restricciones_r1,
-            'restricciones_2':self.total_restricciones_r2,
-            'restricciones_3':self.total_restricciones_r3,
+            'restricciones_1': self.total_restricciones_r1,
+            'restricciones_2': self.total_restricciones_r2,
+            'restricciones_3': self.total_restricciones_r3,
+            'restricciones_4': self.total_restricciones_r4,
+            'restricciones_5': self.total_restricciones_r5,
             'funcion_objetivo': self.fun_obj,
-            'planificacion':planificacion,
+            'planificacion': planificacion,
             'valor_optimo': valor_optimo,
             'instantes': instantes,
             'solucion': solucion,
@@ -218,8 +223,44 @@ def pre_procesamiento_r3(variables, tis, m):
             # Construir restriccion para variable
             if [[]] != submatriz:
                 expresion = [' + '.join(elemento) for elemento in submatriz]
-                resultado.append(' + '.join(expresion) + ' + %i%s <= %i' % (m,variable[1:],m))
+                resultado.append(' + '.join(expresion) + ' + %i%s <= %i' % (m, variable[1:], m))
     return resultado
+
+
+def pre_procesamiento_r4(variables, k):
+    """
+    Autor: Daniel Correa
+
+    Permite generar el conjunto de restricciones R4: Primera columa de variables debe ser = 1
+
+    R4: Sum i=1 hasta k de Xi1 = 1
+
+    :param variables: variables de decision
+    :param k: cantidad de parcelas
+    :return: Expresion para solver
+    """
+    resultado = [fila[0] for fila in variables]
+    return [' + '.join(resultado) + ' = 1 ']
+
+
+def pre_procesamiento_r5(variables, tis):
+    """
+    Autor: Daniel Correa
+
+    Permite generar el conjunto de restricciones R5: Garantizar que una vez acabe una cosecha empiece otra en el instante T+1
+
+    :param variables: variables de decision
+    :param tis: tiempos de cosecha de cada parcela
+    :return: Expresion para solver
+    """
+    resultado = []
+    for i, fila in enumerate(variables):
+        for j, variable in enumerate(fila):
+            if j + tis[i] < len(fila):
+                valores_columna = [elemento[j + tis[i]] for elemento in variables]
+                resultado.append(' + '.join(valores_columna) + ' - %s' % variable + ' >= 0')
+    return resultado
+
 
 def planificacion_parcelas(solucion,variables,k,b):
     """

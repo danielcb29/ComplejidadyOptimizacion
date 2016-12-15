@@ -89,8 +89,21 @@
           <div class="blog-post">
             <h2 class="blog-post-title">Restricciones de Solapamiento</h2>
             <div class="row marketing">
-              <div class="col-lg-6">
+              <div class="col-lg-4">
+                <h4>Las parcelas se cosechan de forma secuencial, una despues de la otra</h4>
                 {% for restriccion in restricciones_3 %}
+                <p>{{ restriccion }}</p>
+                {% endfor %}
+              </div>
+              <div class="col-lg-4">
+                <h4>Siempre se empieza a cosechar en el instante 1</h4>
+                {% for restriccion in restricciones_4 %}
+                <p>{{ restriccion }}</p>
+                {% endfor %}
+              </div>
+              <div class="col-lg-4">
+                <h4>Si se termina una cosecha en el instante T, la siguiente empieza en el instante T+1</h4>
+                {% for restriccion in restricciones_5 %}
                 <p>{{ restriccion }}</p>
                 {% endfor %}
               </div>
