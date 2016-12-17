@@ -1,4 +1,4 @@
-from optimizacion.simplex import Simplex
+from simplex import Simplex
 
 objective = ('maximize', '40x_1 + 30x_2 + 38x_3 + 45x_4')
 constraints = [

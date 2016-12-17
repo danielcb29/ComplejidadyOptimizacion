@@ -2,12 +2,121 @@
 {% load bootstrap3 %}
 
 {% block contenido %}
-    <h1>Subir archivo</h1>
-    <form action="" method="post" enctype="multipart/form-data">{% csrf_token %}
-        {% bootstrap_form form %}
 
-        <button class="btn btn-primary"> Enviar</button>
-    </form>
-    <hr/>
-    <h1>Resultados</h1>
+<div class="container">
+    <div class="container">
+      <div class="blog-header">
+        <h1 class="blog-title">Planificador de cosechas</h1>
+        <p class="lead blog-description">Determina en que momento es mejor cosechar cada parcela.</p>
+      </div>
+      <div class="row">
+        <div class="col-sm-12 blog-main">
+          <div class="blog-post">
+            <form class="form-inline" action="" method="post" enctype="multipart/form-data">{% csrf_token %}
+                <div class="well">
+                {% bootstrap_form form %}
+                <button class="btn btn-primary pull-right"> Enviar</button>
+                </div>
+            </form>
+          </div><!-- /.blog-post -->
+          <hr>
+          {% if has_resultados %}
+          <div class="blog-post">
+            <h2 class="blog-post-title">Función objetivo</h2>
+            {% if solucion %}
+            <div class="alert alert-success" role="alert">
+              <strong>Solucion encontrada!</strong><br>
+              <strong>Valor Óptimo: </strong>{{ valor_optimo }}<br>
+              <strong>Variables: </strong>{{ solucion }}<br>
+              <strong>Función: </strong>{{ funcion_objetivo }}<br>
+            </div>
+            {% else %}
+            <div class="alert alert-warning" role="alert">
+              <strong>No hay solución factible!</strong>.
+            </div>
+            {% endif %}
+          </div><!-- /.blog-post -->
+          <hr>
+          <div class="blog-post">
+            <h2 class="blog-post-title">Planificación</h2>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Orden de Coseña</h3>
+              </div>
+              <div class="panel-body">
+                <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th>#Parcela\Instante</th>
+                      {% for instante in instantes %}
+                      <th>{{ instante }}</th>
+                      {% endfor %}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for fila in planificacion %}
+                    <tr>
+                      <td>{{ forloop.counter }}</td>
+                      {% for valor in fila %}
+                      <td>{{ valor }}</td>
+                      {% endfor %}
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div><!-- /.blog-post -->
+          <hr>
+          <div class="blog-post">
+            <h2 class="blog-post-title">Restricciones de Unisidad</h2>
+            <div class="row marketing">
+            <div class="col-lg-6">
+                <h4>Cada parcela inicia en un único instante</h4>
+                {% for restriccion in restricciones_1 %}
+                <p>{{ restriccion }}</p>
+                {% endfor %}
+              </div>
+              <div class="col-lg-6">
+                <h4>En un instante dado solo se puede cosechar una parcela</h4>
+                {% for restriccion in restricciones_2 %}
+                <p>{{ restriccion }}</p>
+                {% endfor %}
+              </div>
+            </div>
+          </div><!-- /.blog-post -->
+          <hr>
+          <div class="blog-post">
+            <h2 class="blog-post-title">Restricciones de Solapamiento</h2>
+            <div class="row marketing">
+              <div class="col-lg-4">
+                <h4>Las parcelas se cosechan de forma secuencial, una despues de la otra</h4>
+                {% for restriccion in restricciones_3 %}
+                <p>{{ restriccion }}</p>
+                {% endfor %}
+              </div>
+              <div class="col-lg-4">
+                <h4>Siempre se empieza a cosechar en el instante 1</h4>
+                {% for restriccion in restricciones_4 %}
+                <p>{{ restriccion }}</p>
+                {% endfor %}
+              </div>
+              <div class="col-lg-4">
+                <h4>Si se termina una cosecha en el instante T, la siguiente empieza en el instante T+1</h4>
+                {% for restriccion in restricciones_5 %}
+                <p>{{ restriccion }}</p>
+                {% endfor %}
+              </div>
+            </div>
+          </div><!-- /.blog-post -->
+        {% endif %}
+        </div><!-- /.blog-main -->
+      </div><!-- /.row -->
+    </div><!-- /.container -->
+
+    <footer class="blog-footer">
+      <p>Proyecto de Complejidad y Optimización, Universidad del Valle, Cali, Colombia</p>
+      <p>Aurelio Vivas, Daniel Correa, kellys Santa, Jhon Lourido</p>
+    </footer>
+</div>
 {% endblock %}
